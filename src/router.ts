@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import useAuthUser from './hooks/useAuthUser'
+import { user } from './hooks/useAuthUser'
 
 interface Permission {
   roles: string[]
@@ -16,6 +16,12 @@ const routes: RouteRecordRaw[] = [
     //     noAccessRedirect: '/login',
     //   },
     // },
+    children: [
+      {
+        path: '/room/:id',
+        component: () => import('./pages/Chat.vue')
+      }
+    ]
   },
   {
     path: '/login',
@@ -34,7 +40,6 @@ const router = createRouter({
   routes,
 })
 
-const { user } = useAuthUser()
 router.beforeEach((to, from, next) => {
   console.log(user.value)
   // If there are no permissions to check then proceed

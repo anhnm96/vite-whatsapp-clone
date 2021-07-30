@@ -1,22 +1,21 @@
 <template>
-  <div>
+  <div class="app">
     <router-view />
-    {{ user }}
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeUnmount } from 'vue'
+import { defineComponent, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from './firebase'
-import useAuthUser from '@/hooks/useAuthUser'
+import { user, createUserProfileDocument, setUser } from '@/hooks/useAuthUser'
 import { User } from './types'
+import { setupUseWindowSize } from '@/hooks/useWindowSize'
 
 export default defineComponent({
   name: 'App',
   setup() {
     const router = useRouter()
-    const { user, createUserProfileDocument, setUser } = useAuthUser()
 
     const unsubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
       if (userAuth) {
@@ -36,7 +35,16 @@ export default defineComponent({
         router.push('/login')
       }
     })
-    onBeforeUnmount(() => unsubscribeFromAuth())
+
+    let removeUseWindowSizeEvent: Function
+    onMounted(() => {
+      removeUseWindowSizeEvent = setupUseWindowSize()
+    })
+
+    onBeforeUnmount(() => {
+      unsubscribeFromAuth()
+      removeUseWindowSizeEvent()
+    })
     return { user }
   },
 })

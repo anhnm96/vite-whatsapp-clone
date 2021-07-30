@@ -1,27 +1,28 @@
 import { db } from '@/firebase'
+import { user } from './useAuthUser'
+import { ref } from 'vue'
 
-export default async function useUsers(user) {
-  const snapshot = await db
-    .collection('users')
-    .orderBy('timestamp', 'desc')
-    .get()
+export const users = ref<any[]>([])
+db.collection('users')
+  .orderBy('timestamp', 'desc')
+  .onSnapshot((querySnapshot) => {
+    console.log(querySnapshot)
+    querySnapshot.forEach(doc => {
+      const updatedUsers: any[] = []
 
-  const users = []
 
-  if (user) {
-    snapshot.forEach((doc) => {
-      const id =
-        doc.id > user.uid ? `${doc.id}${user.uid}` : `${user.uid}${doc.id}`
-
-      if (doc.id !== user.uid) {
-        users.push({
+      if (user.value && doc.id !== user.value.id) {
+        const id =
+          doc.id > user.value.id ? `${doc.id}${user.value.id}` : `${user.value.id}${doc.id}`
+        updatedUsers.push({
           id,
           userID: doc.id,
           ...doc.data(),
         })
       }
-    })
-  }
 
-  return users
-}
+      console.log(updatedUsers)
+      users.value = updatedUsers
+    })
+  })
+

@@ -82,6 +82,7 @@ export default defineComponent({
   border-radius: 0.25rem;
   font-weight: 600;
   border-style: none;
+  cursor: pointer;
 }
 
 @media (max-width: 760px) {
