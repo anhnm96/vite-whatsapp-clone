@@ -1,6 +1,12 @@
 <template>
   <div class="app">
     <router-view />
+    <div
+      v-show="loadingUser"
+      class="fixed inset-0 flex items-center justify-center w-full h-full bg-black bg-opacity-50"
+    >
+      <BSpinner class="w-40 h-40" />
+    </div>
   </div>
 </template>
 
@@ -8,7 +14,12 @@
 import { defineComponent, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from './firebase'
-import { user, createUserProfileDocument, setUser } from '@/hooks/useAuthUser'
+import {
+  loadingUser,
+  createUserProfileDocument,
+  setUser,
+  user,
+} from '@/hooks/useAuthUser'
 import { User } from './types'
 import { setupUseWindowSize } from '@/hooks/useWindowSize'
 
@@ -16,23 +27,22 @@ export default defineComponent({
   name: 'App',
   setup() {
     const router = useRouter()
+    loadingUser.value = true
 
     const unsubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
       if (userAuth) {
-        console.log('if', userAuth)
         const userRef = await createUserProfileDocument(userAuth)
         userRef?.onSnapshot((snapShot) => {
           const data = snapShot.data() as User
-          console.log('data', data)
           const { name, email, photoURL, timestamp } = data
           setUser({ id: snapShot.id, name, email, photoURL, timestamp })
-          console.log(snapShot.data())
+          loadingUser.value = false
           // TODO: spinner, vuex from
         })
       } else {
-        console.log('else', userAuth)
-        setUser(userAuth)
+        setUser(null)
         router.push('/login')
+        loadingUser.value = false
       }
     })
 
@@ -45,7 +55,7 @@ export default defineComponent({
       unsubscribeFromAuth()
       removeUseWindowSizeEvent()
     })
-    return { user }
+    return { loadingUser }
   },
 })
 </script>

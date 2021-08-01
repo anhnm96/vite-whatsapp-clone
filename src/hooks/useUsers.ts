@@ -1,28 +1,39 @@
 import { db } from '@/firebase'
-import { user } from './useAuthUser'
-import { ref } from 'vue'
+import { ref, watch, Ref } from 'vue'
+import { User } from '@/types'
 
-export const users = ref<any[]>([])
-db.collection('users')
-  .orderBy('timestamp', 'desc')
-  .onSnapshot((querySnapshot) => {
-    console.log(querySnapshot)
-    querySnapshot.forEach(doc => {
-      const updatedUsers: any[] = []
+// export const users = ref<any[]>([])
 
+export default function useUsers(authUser: Ref<User | null | undefined>) {
+  const users = ref<any[]>([])
 
-      if (user.value && doc.id !== user.value.id) {
-        const id =
-          doc.id > user.value.id ? `${doc.id}${user.value.id}` : `${user.value.id}${doc.id}`
-        updatedUsers.push({
-          id,
-          userID: doc.id,
-          ...doc.data(),
-        })
+  watch(
+    authUser,
+    (newVal) => {
+      if (newVal) {
+        db.collection('users')
+          .orderBy('timestamp', 'desc')
+          .onSnapshot((querySnapshot) => {
+            const updatedUsers: any[] = []
+            querySnapshot.forEach((doc) => {
+              if (newVal && doc.id !== newVal.id) {
+                const id =
+                  doc.id > newVal.id
+                    ? `${doc.id}${newVal.id}`
+                    : `${newVal.id}${doc.id}`
+                updatedUsers.push({
+                  id,
+                  userID: doc.id,
+                  ...doc.data(),
+                })
+              }
+            })
+            users.value = updatedUsers
+          })
       }
+    },
+    { immediate: true }
+  )
 
-      console.log(updatedUsers)
-      users.value = updatedUsers
-    })
-  })
-
+  return users
+}

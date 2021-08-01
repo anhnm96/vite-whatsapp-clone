@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sidebar"
+    class="flex-shrink-0 w-1/3 max-w-sm sidebar"
     :style="{minHeight: isMobile ? height : 'auto'}"
   >
     <div class="sidebar__header">
@@ -27,6 +27,7 @@
         <SearchIcon />
         <input
           id="search"
+          v-model="query"
           placeholder="Search for users or rooms"
           type="text"
         >
@@ -64,14 +65,24 @@
     </div>
 
     <SidebarList
-      v-if="activeTab === 'Chats'"
+      v-if="activeTab === 'Rooms'"
       :title="activeTab"
       :data="rooms"
     />
     <SidebarList
-      v-if="activeTab === 'Users'"
+      v-if="activeTab === 'Users' && users"
       :title="activeTab"
       :data="users"
+    />
+    <SidebarList
+      v-if="activeTab === 'Chats' && chats"
+      :title="activeTab"
+      :data="chats"
+    />
+    <SidebarList
+      v-if="activeTab === 'Search'"
+      :title="activeTab"
+      :data="searchResults"
     />
 
     <div className="sidebar__chat--addRoom">
@@ -87,7 +98,9 @@ import { ref, defineComponent } from 'vue'
 import { auth } from '@/firebase'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { user } from '@/hooks/useAuthUser'
-import { users } from '@/hooks/useUsers'
+import useUsers from '@/hooks/useUsers'
+import useChats from '@/hooks/useChats'
+
 import SidebarList from './SidebarList.vue'
 import {
   LogoutIcon,
@@ -113,12 +126,40 @@ export default defineComponent({
   },
   setup() {
     const { width, height, isMobile } = useWindowSize()
+    const activeTab = ref('Chats')
 
     function signOut() {
       auth.signOut()
+      location.reload()
     }
 
-    function searchUsersAndRooms() {}
+    const query = ref('')
+    const searchResults = ref()
+    async function searchUsersAndRooms() {
+      // https://stackoverflow.com/questions/46568142/google-firestore-query-on-substring-of-a-property-value-text-search
+      // 2 ways to search text in firestore
+      const userSnapshot = await db
+        .collection('users')
+        .orderBy('name')
+        .startAt(query.value)
+        .endAt(query.value + '~')
+        .get()
+      const roomSnapshot = await db
+        .collection('rooms')
+        .where('name', '>=', query.value)
+        .where('name', '<=', query.value + '\uf8ff')
+        .get()
+      const userResults = userSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      const roomResults = roomSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      searchResults.value = [...userResults, ...roomResults]
+      activeTab.value = 'Search'
+    }
 
     function createRoom() {
       const roomName = prompt('Type the name of your room')
@@ -131,7 +172,8 @@ export default defineComponent({
       }
     }
 
-    const activeTab = ref('Chats')
+    const users = useUsers(user)
+    const chats = useChats(user)
 
     return {
       user,
@@ -144,6 +186,9 @@ export default defineComponent({
       activeTab,
       rooms,
       users,
+      chats,
+      query,
+      searchResults,
     }
   },
 })
@@ -153,8 +198,6 @@ export default defineComponent({
 .sidebar {
   display: flex;
   flex-direction: column;
-  flex: 0.3;
-  width: 30%;
   position: relative;
   background-color: white;
 }

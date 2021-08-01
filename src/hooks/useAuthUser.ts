@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { User } from '@/types'
 
 export const user = ref<User | null>()
+export const loadingUser = ref(false)
 
 export const createUserProfileDocument = async (
   userAuth: firebase.User | null,

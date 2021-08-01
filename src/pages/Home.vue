@@ -1,7 +1,7 @@
 <template>
   <div class="app__body">
     <Sidebar />
-    <router-view />
+    <router-view :key="$route.fullPath" />
   </div>
 </template>
 
@@ -12,7 +12,6 @@ import Sidebar from '@/components/Sidebar.vue'
 export default defineComponent({
   name: 'Home',
   components: { Sidebar },
-  props: {},
 })
 </script>
 

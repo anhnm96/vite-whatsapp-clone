@@ -1,35 +1,43 @@
 <template>
-  <div class="app">
-    <div class="login">
-      <div class="login__container">
-        <img
-          src="src/assets/login-logo.png"
-          alt="Logo"
-        >
-        <div class="login__text">
-          <h1>Sign in to WhatsApp</h1>
-        </div>
-        <button
-          class="btn-login"
-          @click="login"
-        >
-          Sign in with Google
-        </button>
+  <div class="login">
+    <div class="login__container">
+      <img
+        class="mx-auto"
+        src="src/assets/login-logo.png"
+        alt="Logo"
+      >
+      <div class="login__text">
+        <h1>Sign in to WhatsApp</h1>
       </div>
+      <button
+        class="flex space-x-2 btn-login disabled:opacity-50"
+        @click="login"
+      >
+        <span>Sign in with Google</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { auth, provider } from '@/firebase'
+import { user } from '@/hooks/useAuthUser'
 
 export default defineComponent({
   name: 'Login',
   setup() {
+    const router = useRouter()
     function login() {
-      auth.signInWithRedirect(provider)
+      auth.signInWithPopup(provider)
     }
+
+    watch(user, (newVal) => {
+      if (newVal) {
+        router.replace('/')
+      }
+    })
 
     return { login }
   },
@@ -37,15 +45,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.app {
-  display: grid;
-  place-items: center;
-  background-color: white;
-  height: 100vh;
-  transform-origin: 0% 0%;
-  position: relative;
-}
-
 .login {
   background-color: #f8f8f8;
   height: 100%;

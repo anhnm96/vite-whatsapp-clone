@@ -1,3 +1,19 @@
+# WhatsApp clone
+
+## Features
+
+- [x] Login with google
+- [x] Send direct message to other user
+- [x] Create room
+- [x] Search user and room
+- [x] Send image
+- [x] Send voice message
+- [x] Play voice message
+
+## Screenshots
+
+![Home](./screenshots/whatsapp.png 'Home')
+
 # Vue 3 + Typescript + Vite
 
 This template should help get you started developing with Vue 3 and Typescript in Vite.

@@ -7,7 +7,7 @@ const htmlPlugin = () => {
     transformIndexHtml(html) {
       return html.replace(
         /<title>(.*?)<\/title>/,
-        `<title>Whatsapp</title>`
+        `<title>WhatsApp Clone</title>`
       )
     },
   }
