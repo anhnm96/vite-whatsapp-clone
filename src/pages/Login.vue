@@ -3,7 +3,7 @@
     <div class="login__container">
       <img
         class="mx-auto"
-        src="src/assets/login-logo.png"
+        src="/src/assets/login-logo.png"
         alt="Logo"
       >
       <div class="login__text">
@@ -24,6 +24,7 @@ import { defineComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth, provider } from '@/firebase'
 import { user } from '@/hooks/useAuthUser'
+import Logo from '@/assets/login-logo.png'
 
 export default defineComponent({
   name: 'Login',
